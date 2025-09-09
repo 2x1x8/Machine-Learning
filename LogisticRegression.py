@@ -56,5 +56,6 @@ print(1/(1 + math.e**(-(x_data@w_final + b_final))))
 
 plt.plot(x_data[:, 0], (-b_final - x_data[:,0]*w_final[0])/w_final[1] , c='b',label='Our Prediction')
 plt.scatter(x_data[:, 0], x_data[:, 1])  # Only the first feature
+plt.show()
 plt.xlabel('b')
 plt.ylabel("a")
