@@ -8,26 +8,11 @@ y_train = np.array([300000, 350000, 400000, 450000, 500000])
 x_test = np.array([6.0, 7.5])
 y_test = np.array([85, 95])
 def compute_cost(x, y, w, b):
-  m = x.shape[0]  
-  cost = 0
-  for i in range(m):
-    f_wb = w*x[i] + b
-    cost += ((f_wb - y[i])**2)/2
-  return cost
+  return np.sum(((w*x + b - y)**2)/2)
 def dj_dw(x, y, w, b):
-  m = x.shape[0]  
-  dj_dw = 0
-  for i in range(m):
-    f_wb = w*x[i] + b
-    dj_dw += (f_wb - y[i])*x[i]
-  return dj_dw
+  return np.sum((w*x + b - y)*x)
 def dj_db(x, y, w, b):
-  m = x.shape[0]  
-  dj_db = 0
-  for i in range(m):
-    f_wb = w*x[i] + b
-    dj_db += (f_wb - y[i])
-  return dj_db
+  return np.sum(w*x + b - y)
 def grad_des(x, y, w, b, alpha, iter):
   x = x / 1000
   y = y / 1000
