@@ -31,11 +31,11 @@ def compute_cost(x, y, w, b):
 def dj_dw(x, y, w, b):
   m,n = x.shape 
   f_wb = x @ w + b
-  return x.T@(f_wb - y)/m
+  return ((f_wb - y)/m)@x.T
 def dj_db(x, y, w, b):
   m,n = x.shape  
   f_wb = x@w + b
-  return np.sum(f_wb - y)/(2*m) 
+  return np.sum(f_wb - y)/m
 def grad_des(x_raw, y_raw, w, b, alpha, iter):
   x = standardize(x_raw)
   y = standardize(y_raw)

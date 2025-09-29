@@ -8,11 +8,14 @@ y_train = np.array([300000, 350000, 400000, 450000, 500000])
 x_test = np.array([6.0, 7.5])
 y_test = np.array([85, 95])
 def compute_cost(x, y, w, b):
-  return np.sum(((w*x + b - y)**2)/2)
+  m = y.shape
+  return np.sum(((w*x + b - y)**2))/(2*m)
 def dj_dw(x, y, w, b):
-  return np.sum((w*x + b - y)*x)
+  m = y.shape
+  return ((w*x + b - y)/m)@x
 def dj_db(x, y, w, b):
-  return np.sum(w*x + b - y)
+  m = y.shape
+  return np.sum(w*x + b - y)/m
 def grad_des(x, y, w, b, alpha, iter):
   x = x / 1000
   y = y / 1000
@@ -25,7 +28,7 @@ def grad_des(x, y, w, b, alpha, iter):
     p_history.append([w,b])
   return w*1000,b*1000, j_history, p_history
 
-w_final, b_final, J_hist, p_hist = grad_des(x_train, y_train, 0, 0, 0.01, 10000)
+w_final, b_final, J_hist, p_hist = grad_des(x_train, y_train, 0, 0, 0.1, 10000)
 print(w_final, "and", b_final) 
 print(compute_cost(x_train, y_train, w_final, b_final))
 fig, (ax1) = plt.subplots(1, 1, constrained_layout=True, figsize=(12,4))
