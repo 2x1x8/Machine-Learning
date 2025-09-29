@@ -25,7 +25,7 @@ def softmax(x, w, b):
 def compute_cost(x, y, w, b):
     return np.mean(-np.log(np.sum(y*softmax(x,w,b), 1)))
 def dj_dw(x,y,w,b):
-    return ((softmax(x,w,b).T - y.T)@x)/y.size
+    return ((softmax(x,w,b).T - y.T)@x)/len(y)
 def dj_db(x,y,w,b):
     return np.mean((softmax(x,w,b).T - y.T), 1)
 def grad_des(x, y, w, b, alpha, iter):
