@@ -8,7 +8,7 @@ y_data = np.array(iris.target) # labels (0=setosa, 1=versicolor, 2=virginica)
 x_train, x_test, y_train, y_test = train_test_split(
     x_data, y_data, 
     test_size=0.2,   # 20% test, 80% train
-    random_state=50 # for reproducibility
+    random_state=42 # for reproducibility
 )
 def knn(x, x_data, y_data,k):
     dist = np.sqrt(np.sum(np.square(x_data), 1).reshape(1,-1)
@@ -28,8 +28,9 @@ def knn(x, x_data, y_data,k):
             labels, counts = np.unique(neighbor_labels, return_counts=True)
             predictions[i] = labels[np.argmax(counts)]
     return predictions
-    
+y_pred = knn(x_data, x_train, y_train,10)
+acc = np.mean(y_pred == y_data)
 print( y_test)
-print(knn(x_test, x_train, y_train,10))
+print(acc)
 
         

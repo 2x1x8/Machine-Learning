@@ -31,8 +31,10 @@ def dj_dw(x,y,w,b):
     return ((softmax(x,w,b).T - y.T)@x)/len(y)
 def dj_db(x,y,w,b):
     return np.mean((softmax(x,w,b).T - y.T), 1)
-def grad_des(x, y, w, b, alpha, iter):
-    for i in range(iter):
+def grad_des(x, y, alpha, iter):
+    w = np.zeros((y.shape[1] ,x.shape[1]))
+    b = np.zeros(y.shape[1])
+    for _ in range(iter):
         w = w - alpha*dj_dw(x, y, w, b)
         b = b - alpha*dj_db(x, y, w, b)
     return w, b
@@ -48,9 +50,10 @@ def predict(x,w,b):
                 maxnum = y[i][j]
                 ans[i] = j
     return np.array(ans)
-w_ans, b_ans = grad_des(x_train, y_train, w_test, b_test, 1, 1000)
+w_ans, b_ans = grad_des(x_train, y_train, 1, 1000)
+y_pred = predict(x_data, w_ans, b_ans)
 print(w_ans, b_ans)
 print(compute_cost(x_train,y_train, w_ans, b_ans))
 print(dj_dw(x_train,y_train, w_ans, b_ans))
-print(predict(x_test, w_ans, b_ans))
+print(np.mean(y_pred==y_data))
 print(y_test)
