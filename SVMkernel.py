@@ -1,6 +1,7 @@
 from sklearn.datasets import make_moons
 from sklearn.model_selection import train_test_split
 from qpsolvers import solve_qp
+from PCA import PCA
 import matplotlib.pyplot as plt
 import numpy as np
 import math as math
@@ -10,11 +11,8 @@ x_train, x_test, y_train, y_test = train_test_split(
     test_size=0.2,   # 20% test, 80% train
     random_state=42 # for reproducibility
 )
+PCA().plot(x_data,y_data)
 classes = np.unique(y_data)
-w_test = np.array([0,3,0,0])
-b_test = 0
-print(w_test)
-print((x_test@x_test.T).shape)
 def convert(y, a):
     return np.where(y==a,1,-1)
 def standardize(x):
@@ -29,41 +27,60 @@ def unstandardize(w, b, x_old):
   ans_b = b
   ans_b -= np.sum(mu_x*w/sigma_x)
   return ans_w, ans_b
-def hinge_loss(w, b, x, y,c):
-    return 0.5*np.sum(w**2) + c*np.mean(np.maximum(0, 1 - y*(x@w + b)))
-def dj_dw(w, b, x, y, c):
-    return w + c*(np.where(1 - y*(x@w + b) <= 0, 0, -y)@x)/len(x)
-def dj_db(w, b, x, y, c):
-    return c*np.mean(np.where(1 - y*(x@w + b) <= 0, 0, -y))
-def fit(x, y, c, alpha, iter):
-    w = np.array([0]*x.shape[1])
-    b = 0
-    x_old = x
-    x = standardize(x)
-    for _ in range(iter):
-        w = w - alpha*dj_dw(w, b, x, y, c)
-        b = b - alpha*dj_db(w, b, x, y, c)
-    return unstandardize(w, b, x_old)
-def fit_kernel(x,k):
-    k = x@x
-def predict(w, b, x):
-    return np.argmax(x@w.T + b, axis=1)
-wAns = []
-bAns = []
-if len(classes) == 2:
-    wAns, bAns = (fit(x_train,convert(y_train, classes[0]),100,0.01,1000))
-else:
-    for i in classes:
-        w_i, b_i = (fit(x_train,convert(y_train, i),100,0.01,1000))
-        wAns.append(w_i)
-        bAns.append(b_i)
-wAns, bAns = np.array(wAns), np.array(bAns)
+def rbf_kernel(X1, X2, gamma=0.5):
+    # X1: n1 x d, X2: n2 x d
+    sq_dists = np.sum(X1**2, axis=1)[:,None] + np.sum(X2**2, axis=1)[None,:] - 2*X1@X2.T
+    print(sq_dists)
+    return np.exp(-gamma * sq_dists)
+rbf_kernel(np.array([[1.0, 2.0],[3.0, 4.0]]),np.array([[1.0, 2.0],[0.0, 0.0]]))
+def train_dual_svm(X, y, C=1.0):
+    n = len(y)
+    K = rbf_kernel(X, X, gamma=0.5)
+    K = (K+K.T)/2+ np.eye(n)*1e-8
+    P = np.outer(y, y) * K
+    q = -np.ones(n)
+    G = np.vstack([-np.eye(n), np.eye(n)])
+    h = np.hstack([np.zeros(n),C*np.ones(n)])
+    A = y.reshape(1, -1)
+    b = np.array([0.])
+    a = solve_qp(P, q, G, h, A, b, solver="daqp")  # or "proxqp"
+    sv = (a > 1e-6) & (a < C - 1e-6) 
+    b = np.mean(y[sv] - np.sum(((a * y)[:, None] *rbf_kernel(X, X[sv])),axis=0))
+    return a, b
+import numpy as np
 
-print(wAns)
-print(hinge_loss(wAns[0], bAns[0], x_train, convert(y_train,0),100))
+def decision_function(X_train, y_train, a, b, X_test, kernel):
+    K = kernel(X_train, X_test)  # shape (n_train, n_test)   
+    f = np.sum(((a * y_train)[:, None] * K), axis = 0)+ b
+    return f
+
+def predict(X_train, y_train, a, b, X_test, kernel):
+    f = decision_function(X_train, y_train, a, b, X_test, kernel)
+    print(f)
+    return np.sign(f)
+a, b = train_dual_svm(x_train, convert(y_train, 0), C=10.0)
+
+y_pred = predict(x_train,convert(y_train, 0),a,b , x_test, rbf_kernel)
+y_test = convert(y_test, 0)
 print(y_test)
-print(predict(wAns, bAns, x_test))
-print(y_test - predict(wAns, bAns, x_test))
-y_pred = predict(wAns, bAns, x_test)
+print(y_pred)
+print(y_test - y_pred)
+
 acc = np.mean(y_pred == y_test)
 print("Test accuracy:", acc)
+
+x1 = np.linspace(min(x_data[:, 0]), max(x_data[:, 0]), 400)
+x2 = np.linspace(min(x_data[:, 1]), max(x_data[:, 1]), 400)
+X1, X2 = np.meshgrid(x1, x2)
+X_grid = np.c_[X1.ravel(), X2.ravel()]   # shape (160000, 2)
+F = decision_function(x_train, convert(y_train, 0), a, b, X_grid, rbf_kernel)
+F = F.reshape(X1.shape)
+fig, axs = plt.subplots(1, 1, figsize=(4, 4))
+plt.contourf(X1, X2, F,  cmap = 'jet')
+plt.colorbar()
+axs.scatter(x_data[:, 0], x_data[:, 1], c=y_data)
+axs.set_xlabel(f"X1")
+axs.set_ylabel(f"X2")
+axs.set_title(f"moons")
+plt.tight_layout()  # avoids overlapping labels
+plt.show()
