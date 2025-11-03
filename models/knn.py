@@ -28,8 +28,8 @@ def knn(x, x_data, y_data,k):
             labels, counts = np.unique(neighbor_labels, return_counts=True)
             predictions[i] = labels[np.argmax(counts)]
     return predictions
-y_pred = knn(x_data, x_train, y_train,10)
-acc = np.mean(y_pred == y_data)
+y_pred = knn(x_test, x_train, y_train,10)
+acc = np.mean(y_pred == y_test)
 print( y_test)
 print(acc)
 

@@ -11,9 +11,6 @@ x_train, x_test, y_train, y_test = train_test_split(
     random_state=42 # for reproducibility
 )
 w_test = np.array([[1,2,4,3],[1,1,3,1],[1,2,1,1]])
-print(w_test)
-print(w_test[:,None])
-print(w_test[None,:])
 b_test = np.array([0,0,0])
 class_size = 3
 flower = ["setosa", "versicolor", "virginica"]

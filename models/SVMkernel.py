@@ -30,7 +30,6 @@ def unstandardize(w, b, x_old):
 def rbf_kernel(X1, X2, gamma=0.5):
     # X1: n1 x d, X2: n2 x d
     sq_dists = np.sum(X1**2, axis=1)[:,None] + np.sum(X2**2, axis=1)[None,:] - 2*X1@X2.T
-    print(sq_dists)
     return np.exp(-gamma * sq_dists)
 rbf_kernel(np.array([[1.0, 2.0],[3.0, 4.0]]),np.array([[1.0, 2.0],[0.0, 0.0]]))
 def train_dual_svm(X, y, C=1.0):
@@ -42,12 +41,15 @@ def train_dual_svm(X, y, C=1.0):
     G = np.vstack([-np.eye(n), np.eye(n)])
     h = np.hstack([np.zeros(n),C*np.ones(n)])
     A = y.reshape(1, -1)
+    print(A.shape)
     b = np.array([0.])
     a = solve_qp(P, q, G, h, A, b, solver="daqp")  # or "proxqp"
     sv = (a > 1e-6) & (a < C - 1e-6) 
-    b = np.mean(y[sv] - np.sum(((a * y)[:, None] *rbf_kernel(X, X[sv])),axis=0))
+    if np.any(sv):
+        b = np.mean(y[sv] - np.sum(((a * y)[:, None] * rbf_kernel(X, X[sv])), axis=0))
+    else:
+        b = 0.0
     return a, b
-import numpy as np
 
 def decision_function(X_train, y_train, a, b, X_test, kernel):
     K = kernel(X_train, X_test)  # shape (n_train, n_test)   
@@ -56,7 +58,6 @@ def decision_function(X_train, y_train, a, b, X_test, kernel):
 
 def predict(X_train, y_train, a, b, X_test, kernel):
     f = decision_function(X_train, y_train, a, b, X_test, kernel)
-    print(f)
     return np.sign(f)
 a, b = train_dual_svm(x_train, convert(y_train, 0), C=10.0)
 
