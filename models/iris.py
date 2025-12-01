@@ -10,10 +10,10 @@ x_train, x_test, y_train, y_test = train_test_split(
     test_size=0.2,   # 20% test, 80% train
     random_state=42 # for reproducibility
 )
-w_test = np.array([[1,2,4,3],[1,1,3,1],[1,2,1,1]])
-b_test = np.array([0,0,0])
-class_size = 3
 flower = ["setosa", "versicolor", "virginica"]
+
+samples, features = x_data.shape
+class_size = 3
 def one_hot(clas, size):
     arr = np.array([[0 for _ in range(size)] for j in range(len(clas))])
     for i in range(len(arr)):
@@ -28,7 +28,9 @@ def dj_dw(x,y,w,b):
     return ((softmax(x,w,b).T - y.T)@x)/len(y)
 def dj_db(x,y,w,b):
     return np.mean((softmax(x,w,b).T - y.T), 1)
-def grad_des(x, y, w, b, alpha, iter):
+def grad_des(x, y, alpha, iter):
+    w = np.zeros((class_size,features ))
+    b = np.zeros(class_size)
     for i in range(iter):
         w = w - alpha*dj_dw(x, y, w, b)
         b = b - alpha*dj_db(x, y, w, b)
@@ -45,9 +47,12 @@ def predict(x,w,b):
                 maxnum = y[i][j]
                 ans[i] = j
     return np.array(ans)
-w_ans, b_ans = grad_des(x_train, y_train, w_test, b_test, 1, 1000)
+w_ans, b_ans = grad_des(x_train, y_train, 1, 1000)
 print(w_ans, b_ans)
 print(compute_cost(x_train,y_train, w_ans, b_ans))
-print(dj_dw(x_train,y_train, w_ans, b_ans))
-print(predict(x_test, w_ans, b_ans))
+y_pred = predict(x_test, w_ans, b_ans)
 print(y_test)
+print(y_pred)
+print(y_test - y_pred)
+acc = np.mean(y_pred == y_test)
+print("Test accuracy:", acc)

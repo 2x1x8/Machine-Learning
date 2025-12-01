@@ -4,7 +4,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import seaborn as sns
+
 # Replace 'your_file.csv' with your file path
 df = pd.read_csv("TitanicSurvivors/train.csv")
 
@@ -45,13 +45,11 @@ plt.title('Age vs Survival')
 plt.xlabel('Age')
 plt.ylabel('Survived (1=Yes, 0=No)')
 plt.show()
+
 corr = df.corr(numeric_only=True)
 plt.imshow(corr, cmap='coolwarm', interpolation='none')
 plt.colorbar()
 plt.xticks(range(len(corr)), corr.columns, rotation=90)
 plt.yticks(range(len(corr)), corr.columns)
 plt.title('Feature Correlation Matrix')
-plt.show()
-
-sns.heatmap(df.corr(numeric_only=True), cmap="YlGnBu")
 plt.show()
